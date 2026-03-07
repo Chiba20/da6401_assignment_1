@@ -9,7 +9,7 @@ https://github.com/<https://github.com/Chiba20/da6401_assignment_1.git>
 Weights & Biases Report:  
 https://wandb.ai/<https://wandb.ai/ge26z812-iitm-india/da6401-mlp/reports/DA6401-Assignment-1-MLP-for-Image-Classification--VmlldzoxNjEzNDI2MA?accessToken=25y991ov1r5tevalopjjt0ka1jmnrn07x24ur9pv0bqer90qq6b0mk7dwygu1kqk>
 
-This assignment implements a **Multi-Layer Perceptron (MLP)** from scratch using **NumPy** for image classification on the **MNIST** and **Fashion-MNIST** datasets.
+This assignment implements a **Multi-Layer Perceptron (MLP)** using **NumPy** for image classification on the **MNIST** and **Fashion-MNIST** datasets.
 
 The implementation includes custom layers, activation functions, loss functions, and optimizers without using high-level deep learning frameworks.
 
