@@ -1,0 +1,11 @@
+{"time":"2026-03-07T13:32:15.1572697+05:30","level":"INFO","msg":"stream: starting","core version":"0.25.0"}
+{"time":"2026-03-07T13:32:15.8565962+05:30","level":"INFO","msg":"stream: created new stream","id":"evdh3215"}
+{"time":"2026-03-07T13:32:15.8565962+05:30","level":"INFO","msg":"handler: started","stream_id":"evdh3215"}
+{"time":"2026-03-07T13:32:15.8600356+05:30","level":"INFO","msg":"stream: started","id":"evdh3215"}
+{"time":"2026-03-07T13:32:15.8600356+05:30","level":"INFO","msg":"writer: started","stream_id":"evdh3215"}
+{"time":"2026-03-07T13:32:15.8600356+05:30","level":"INFO","msg":"sender: started","stream_id":"evdh3215"}
+{"time":"2026-03-07T13:32:47.2667164+05:30","level":"INFO","msg":"stream: closing","id":"evdh3215"}
+{"time":"2026-03-07T13:32:48.7497687+05:30","level":"INFO","msg":"fileTransfer: Close: file transfer manager closed"}
+{"time":"2026-03-07T13:32:49.4070636+05:30","level":"INFO","msg":"handler: closed","stream_id":"evdh3215"}
+{"time":"2026-03-07T13:32:49.4366888+05:30","level":"INFO","msg":"sender: closed","stream_id":"evdh3215"}
+{"time":"2026-03-07T13:32:49.4371804+05:30","level":"INFO","msg":"stream: closed","id":"evdh3215"}

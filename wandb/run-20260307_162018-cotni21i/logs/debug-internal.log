@@ -1,0 +1,12 @@
+{"time":"2026-03-07T16:20:21.2917261+05:30","level":"INFO","msg":"stream: starting","core version":"0.25.0"}
+{"time":"2026-03-07T16:20:21.822947+05:30","level":"INFO","msg":"stream: created new stream","id":"cotni21i"}
+{"time":"2026-03-07T16:20:21.8230712+05:30","level":"INFO","msg":"handler: started","stream_id":"cotni21i"}
+{"time":"2026-03-07T16:20:21.8247379+05:30","level":"INFO","msg":"stream: started","id":"cotni21i"}
+{"time":"2026-03-07T16:20:21.8247981+05:30","level":"INFO","msg":"writer: started","stream_id":"cotni21i"}
+{"time":"2026-03-07T16:20:21.8247981+05:30","level":"INFO","msg":"sender: started","stream_id":"cotni21i"}
+{"time":"2026-03-07T16:20:45.7304081+05:30","level":"INFO","msg":"fileTransfer: Close: file transfer manager closed"}
+{"time":"2026-03-07T16:20:46.261673+05:30","level":"INFO","msg":"handler: operation stats","stats":{}}
+{"time":"2026-03-07T16:20:46.2786422+05:30","level":"INFO","msg":"stream: closing","id":"cotni21i"}
+{"time":"2026-03-07T16:20:46.2786422+05:30","level":"INFO","msg":"handler: closed","stream_id":"cotni21i"}
+{"time":"2026-03-07T16:20:46.3075689+05:30","level":"INFO","msg":"sender: closed","stream_id":"cotni21i"}
+{"time":"2026-03-07T16:20:46.3075689+05:30","level":"INFO","msg":"stream: closed","id":"cotni21i"}

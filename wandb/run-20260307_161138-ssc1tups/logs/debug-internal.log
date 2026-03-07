@@ -1,0 +1,12 @@
+{"time":"2026-03-07T16:11:40.4998587+05:30","level":"INFO","msg":"stream: starting","core version":"0.25.0"}
+{"time":"2026-03-07T16:11:41.0076512+05:30","level":"INFO","msg":"stream: created new stream","id":"ssc1tups"}
+{"time":"2026-03-07T16:11:41.0082731+05:30","level":"INFO","msg":"handler: started","stream_id":"ssc1tups"}
+{"time":"2026-03-07T16:11:41.012821+05:30","level":"INFO","msg":"stream: started","id":"ssc1tups"}
+{"time":"2026-03-07T16:11:41.0129711+05:30","level":"INFO","msg":"sender: started","stream_id":"ssc1tups"}
+{"time":"2026-03-07T16:11:41.012821+05:30","level":"INFO","msg":"writer: started","stream_id":"ssc1tups"}
+{"time":"2026-03-07T16:12:01.1395024+05:30","level":"INFO","msg":"fileTransfer: Close: file transfer manager closed"}
+{"time":"2026-03-07T16:12:01.6111248+05:30","level":"INFO","msg":"handler: operation stats","stats":{}}
+{"time":"2026-03-07T16:12:01.6229367+05:30","level":"INFO","msg":"stream: closing","id":"ssc1tups"}
+{"time":"2026-03-07T16:12:01.6229367+05:30","level":"INFO","msg":"handler: closed","stream_id":"ssc1tups"}
+{"time":"2026-03-07T16:12:01.6523912+05:30","level":"INFO","msg":"sender: closed","stream_id":"ssc1tups"}
+{"time":"2026-03-07T16:12:01.6523912+05:30","level":"INFO","msg":"stream: closed","id":"ssc1tups"}

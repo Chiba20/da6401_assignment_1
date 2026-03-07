@@ -1,0 +1,6 @@
+Epoch 1/5 | val_loss=0.507818 | val_acc=0.866500
+Epoch 2/5 | val_loss=0.367344 | val_acc=0.896167
+Epoch 3/5 | val_loss=0.326874 | val_acc=0.906167
+Epoch 4/5 | val_loss=0.297253 | val_acc=0.916167
+Epoch 5/5 | val_loss=0.277784 | val_acc=0.920500
+Final test accuracy: 0.926100
