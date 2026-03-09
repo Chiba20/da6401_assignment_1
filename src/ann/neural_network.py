@@ -22,7 +22,6 @@ class NeuralNetwork:
         if isinstance(layer_sizes, Namespace):
             args = layer_sizes
 
-            # support multiple possible autograder field names
             input_size = getattr(args, "input_size", 784)
             output_size = getattr(args, "output_size", 10)
 
@@ -64,7 +63,7 @@ class NeuralNetwork:
                 )
             )
 
-        # output layer (linear logits)
+        # output layer
         self.layers.append(
             NeuralLayer(
                 layer_sizes[-2],
@@ -109,15 +108,63 @@ class NeuralNetwork:
         return np.argmax(probs, axis=1), probs
 
     def get_weights(self):
-        weights = []
-        for layer in self.layers:
-            weights.append({
-                "W": layer.W.copy(),
-                "b": layer.b.copy()
-            })
-        return np.array(weights, dtype=object)
+
+        return {
+            "weights": [layer.W.copy() for layer in self.layers],
+            "biases": [layer.b.copy() for layer in self.layers]
+        }
 
     def set_weights(self, weights):
-        for layer, saved in zip(self.layers, weights):
-            layer.W = saved["W"].copy()
-            layer.b = saved["b"].copy()
+        # Case 1: np.load(..., allow_pickle=True) may return 0-d object array
+        if isinstance(weights, np.ndarray) and weights.shape == ():
+            weights = weights.item()
+
+        # Case 2: dict format {"weights":[...], "biases":[...]}
+        if isinstance(weights, dict):
+            if "weights" in weights and "biases" in weights:
+                W_list = weights["weights"]
+                b_list = weights["biases"]
+
+            # Support dict like {"layers":[{"W":...,"b":...}, ...]}
+            elif "layers" in weights:
+                W_list = [entry["W"] for entry in weights["layers"]]
+                b_list = [entry["b"] for entry in weights["layers"]]
+
+            # Support dict like {"W1":..., "b1":..., "W2":..., "b2":...}
+            else:
+                W_list = []
+                b_list = []
+                i = 1
+                while f"W{i}" in weights and f"b{i}" in weights:
+                    W_list.append(weights[f"W{i}"])
+                    b_list.append(weights[f"b{i}"])
+                    i += 1
+
+                if len(W_list) == 0:
+                    raise ValueError("Unsupported dict weight format")
+
+        # Case 3: list/tuple of dicts [{"W":...,"b":...}, ...]
+        elif isinstance(weights, (list, tuple)) and len(weights) > 0 and isinstance(weights[0], dict):
+            W_list = [entry["W"] for entry in weights]
+            b_list = [entry["b"] for entry in weights]
+
+        # Case 4: object array of dicts
+        elif isinstance(weights, np.ndarray) and weights.dtype == object:
+            weights_list = list(weights)
+            if len(weights_list) > 0 and isinstance(weights_list[0], dict):
+                W_list = [entry["W"] for entry in weights_list]
+                b_list = [entry["b"] for entry in weights_list]
+            else:
+                raise ValueError("Unsupported ndarray weight format")
+
+        else:
+            raise ValueError("Unsupported weight format passed to set_weights")
+
+        if len(W_list) != len(self.layers) or len(b_list) != len(self.layers):
+            raise ValueError("Number of weight matrices / bias vectors does not match model layers")
+
+        for layer, W, b in zip(self.layers, W_list, b_list):
+            layer.W = np.array(W, dtype=np.float64).copy()
+            layer.b = np.array(b, dtype=np.float64).copy()
+            if layer.b.ndim == 1:
+                layer.b = layer.b.reshape(1, -1)

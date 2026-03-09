@@ -1,15 +1,16 @@
 {
   "dataset": "mnist",
-  "epochs": 3,
-  "batch_size": 32,
+  "epochs": 10,
+  "batch_size": 64,
   "loss": "cross_entropy",
-  "optimizer": "sgd",
-  "learning_rate": 0.01,
+  "optimizer": "rmsprop",
+  "learning_rate": 0.001,
   "weight_decay": 0.0,
-  "num_layers": 2,
+  "num_layers": 3,
   "hidden_size": [
-    3,
-    2
+    128,
+    128,
+    128
   ],
   "activation": "relu",
   "weight_init": "xavier"

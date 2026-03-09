@@ -35,7 +35,7 @@ def main():
     if args.num_layers != len(args.hidden_size):
         raise ValueError("num_layers must match the count of hidden_size values")
 
-    # Use W&B online locally if credentials exist, otherwise disable (safe for autograder)
+    # Safe for local use and autograder
     wandb_mode = "online" if os.path.exists(os.path.expanduser("~/.netrc")) else "disabled"
     wandb.init(
         project="da6401-mlp",
@@ -134,6 +134,7 @@ def main():
         "activation": args.activation,
         "weight_init": args.weight_init,
     }
+
     with open("src/config.json", "w", encoding="utf-8") as f:
         json.dump(config, f, indent=2)
 

@@ -89,6 +89,9 @@ def main():
     )
 
     weights = np.load(args.model_path, allow_pickle=True)
+    if isinstance(weights, np.ndarray) and weights.shape == ():
+        weights = weights.item()
+
     model.set_weights(weights)
 
     predictions, _ = model.predict(x_test)
