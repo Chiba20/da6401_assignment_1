@@ -3,19 +3,13 @@ import json
 import numpy as np
 import matplotlib.pyplot as plt
 
-from sklearn.metrics import (
-    accuracy_score,
-    precision_score,
-    recall_score,
-    f1_score,
-    confusion_matrix
-)
+from sklearn.metrics import accuracy_score, precision_score, recall_score, f1_score, confusion_matrix
 
 from ann.neural_network import NeuralNetwork
 from utils.data_loader import load_data
 
 
-def parse_args():
+def parse_arguments():
     parser = argparse.ArgumentParser()
     parser.add_argument("--model_path", default="src/best_model.npy")
     parser.add_argument("--config_path", default="src/config.json")
@@ -54,7 +48,6 @@ def save_misclassified_examples(x_test, y_test, predictions, save_path, max_imag
     num_images = min(len(misclassified_idx), max_images)
 
     if num_images == 0:
-        print("No misclassified examples found.")
         return
 
     cols = 5
@@ -76,7 +69,7 @@ def save_misclassified_examples(x_test, y_test, predictions, save_path, max_imag
 
 
 def main():
-    args = parse_args()
+    args = parse_arguments()
 
     with open(args.config_path, "r", encoding="utf-8") as f:
         config = json.load(f)

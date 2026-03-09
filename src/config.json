@@ -1,9 +1,9 @@
 {
-  "dataset": "fashion",
+  "dataset": "mnist",
   "epochs": 10,
   "batch_size": 64,
   "loss": "cross_entropy",
-  "optimizer": "nag",
+  "optimizer": "rmsprop",
   "learning_rate": 0.001,
   "weight_decay": 0.0,
   "num_layers": 3,
@@ -13,6 +13,5 @@
     128
   ],
   "activation": "relu",
-  "weight_init": "xavier",
-  "log_samples": false
+  "weight_init": "xavier"
 }
