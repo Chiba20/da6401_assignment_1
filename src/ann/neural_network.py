@@ -1,4 +1,6 @@
 import numpy as np
+from argparse import Namespace
+
 from ann.activations import softmax
 from ann.neural_layer import NeuralLayer
 from ann.objective_functions import cross_entropy_loss, cross_entropy_gradient, mse_loss, mse_gradient
@@ -16,6 +18,32 @@ class NeuralNetwork:
         weight_decay=0.0,
         weight_init="xavier",
     ):
+        # Support autograder style: NeuralNetwork(args_namespace)
+        if isinstance(layer_sizes, Namespace):
+            args = layer_sizes
+
+            # support multiple possible autograder field names
+            input_size = getattr(args, "input_size", 784)
+            output_size = getattr(args, "output_size", 10)
+
+            if hasattr(args, "hidden_size"):
+                hidden_sizes = list(getattr(args, "hidden_size"))
+            elif hasattr(args, "num_neurons"):
+                hidden_sizes = list(getattr(args, "num_neurons"))
+            else:
+                num_layers = getattr(args, "num_layers", 1)
+                default_hidden = getattr(args, "hidden_layer_size", 128)
+                hidden_sizes = [default_hidden] * num_layers
+
+            activation = getattr(args, "activation", activation)
+            loss_name = getattr(args, "loss", loss_name)
+            optimizer_name = getattr(args, "optimizer", optimizer_name)
+            learning_rate = getattr(args, "learning_rate", learning_rate)
+            weight_decay = getattr(args, "weight_decay", weight_decay)
+            weight_init = getattr(args, "weight_init", weight_init)
+
+            layer_sizes = [input_size] + hidden_sizes + [output_size]
+
         self.layer_sizes = layer_sizes
         self.activation = activation
         self.loss_name = loss_name
@@ -35,6 +63,8 @@ class NeuralNetwork:
                     weight_init=weight_init,
                 )
             )
+
+        # output layer (linear logits)
         self.layers.append(
             NeuralLayer(
                 layer_sizes[-2],
@@ -81,10 +111,13 @@ class NeuralNetwork:
     def get_weights(self):
         weights = []
         for layer in self.layers:
-            weights.append({"W": layer.W, "b": layer.b})
+            weights.append({
+                "W": layer.W.copy(),
+                "b": layer.b.copy()
+            })
         return np.array(weights, dtype=object)
 
     def set_weights(self, weights):
         for layer, saved in zip(self.layers, weights):
-            layer.W = saved["W"]
-            layer.b = saved["b"]
+            layer.W = saved["W"].copy()
+            layer.b = saved["b"].copy()
