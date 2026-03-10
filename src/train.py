@@ -8,6 +8,8 @@ from ann.neural_network import NeuralNetwork
 from ann.objective_functions import one_hot_encode
 from utils.data_loader import load_data
 
+np.random.seed(42)
+
 
 def parse_arguments():
     parser = argparse.ArgumentParser()

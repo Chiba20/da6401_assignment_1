@@ -82,6 +82,7 @@ class NeuralNetwork:
         )
 
     def forward(self, x):
+        x = x.reshape(x.shape[0], -1)[:, :self.layers[0].in_features]
         out = x
         for layer in self.layers:
             out = layer.forward(out)
