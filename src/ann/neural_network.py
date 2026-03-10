@@ -3,7 +3,12 @@ from argparse import Namespace
 
 from ann.activations import softmax
 from ann.neural_layer import NeuralLayer
-from ann.objective_functions import cross_entropy_loss, cross_entropy_gradient, mse_loss, mse_gradient
+from ann.objective_functions import (
+    cross_entropy_loss,
+    cross_entropy_gradient,
+    mse_loss,
+    mse_gradient,
+)
 from ann.optimizers import Optimizer
 
 
@@ -18,7 +23,6 @@ class NeuralNetwork:
         weight_decay=0.0,
         weight_init="xavier",
     ):
-        # Support autograder style: NeuralNetwork(args_namespace)
         if isinstance(layer_sizes, Namespace):
             args = layer_sizes
 
@@ -30,17 +34,18 @@ class NeuralNetwork:
                 if isinstance(hidden, (list, tuple, np.ndarray)):
                     hidden_sizes = list(hidden)
                 else:
-                    num_layers = getattr(args, "num_layers", 2)
-                    hidden_count = max(int(num_layers) - 1, 1)
-                    hidden_sizes = [default_hidden] * hidden_count
+                    hidden_sizes = [int(hidden)]
             elif hasattr(args, "num_neurons"):
                 hidden = getattr(args, "num_neurons")
-                hidden_sizes = list(hidden) if isinstance(hidden, (list, tuple, np.ndarray)) else [int(hidden)]
+                if isinstance(hidden, (list, tuple, np.ndarray)):
+                    hidden_sizes = list(hidden)
+                else:
+                    num_layers = getattr(args, "hidden_layers", getattr(args, "num_layers", 1))
+                    hidden_sizes = [int(hidden)] * int(num_layers)
             else:
-                num_layers = getattr(args, "num_layers", 2)
-                default_hidden = getattr(args, "hidden_layer_size", 128)
-                hidden_count = max(int(num_layers) - 1, 1)
-                hidden_sizes = [default_hidden] * hidden_count
+                num_layers = int(getattr(args, "hidden_layers", getattr(args, "num_layers", 1)))
+                default_hidden = int(getattr(args, "hidden_layer_size", 128))
+                hidden_sizes = [default_hidden] * num_layers
 
             activation = getattr(args, "activation", activation)
             loss_name = getattr(args, "loss", loss_name)
@@ -51,7 +56,7 @@ class NeuralNetwork:
 
             layer_sizes = [input_size] + hidden_sizes + [output_size]
 
-        self.layer_sizes = layer_sizes
+        self.layer_sizes = list(layer_sizes)
         self.activation = activation
         self.loss_name = loss_name
         self.optimizer = Optimizer(
@@ -61,31 +66,39 @@ class NeuralNetwork:
         )
 
         self.layers = []
-        for i in range(len(layer_sizes) - 2):
+        for i in range(len(self.layer_sizes) - 2):
             self.layers.append(
                 NeuralLayer(
-                    layer_sizes[i],
-                    layer_sizes[i + 1],
+                    self.layer_sizes[i],
+                    self.layer_sizes[i + 1],
                     activation=activation,
                     weight_init=weight_init,
                 )
             )
 
-        # output layer
         self.layers.append(
             NeuralLayer(
-                layer_sizes[-2],
-                layer_sizes[-1],
+                self.layer_sizes[-2],
+                self.layer_sizes[-1],
                 activation=None,
                 weight_init=weight_init,
             )
         )
 
     def forward(self, x):
-        x = x.reshape(x.shape[0], -1)[:, :self.layers[0].in_features]
-        out = x
+        if isinstance(x, list):
+            x = np.array(x, dtype=np.float64)
+
+        if x.ndim == 1:
+            out = x.reshape(1, -1)
+        elif x.ndim > 2:
+            out = x.reshape(x.shape[0], -1)
+        else:
+            out = x
+
         for layer in self.layers:
             out = layer.forward(out)
+
         return out
 
     def compute_loss(self, y_true, logits):
@@ -108,6 +121,10 @@ class NeuralNetwork:
         for layer in reversed(self.layers):
             grad = layer.backward(grad)
 
+        grad_W_list = [layer.grad_W.copy() for layer in self.layers]
+        grad_b_list = [layer.grad_b.copy() for layer in self.layers]
+        return grad_W_list, grad_b_list
+
     def update_weights(self):
         self.optimizer.update(self.layers)
 
@@ -117,93 +134,58 @@ class NeuralNetwork:
         return np.argmax(probs, axis=1), probs
 
     def get_weights(self):
-
         return {
             "weights": [layer.W.copy() for layer in self.layers],
-            "biases": [layer.b.copy() for layer in self.layers]
+            "biases": [layer.b.copy() for layer in self.layers],
         }
 
     def set_weights(self, weights):
-        # Case 1: np.load(..., allow_pickle=True) may return 0-d object array
         if isinstance(weights, np.ndarray) and weights.shape == ():
             weights = weights.item()
 
-        # Case 2: dict format {"weights":[...], "biases":[...]}
+        W_list = None
+        b_list = None
+
         if isinstance(weights, dict):
             if "weights" in weights and "biases" in weights:
-                W_list = weights["weights"]
-                b_list = weights["biases"]
+                W_list = list(weights["weights"])
+                b_list = list(weights["biases"])
 
-            # Support dict like {"layers":[{"W":...,"b":...}, ...]}
             elif "layers" in weights:
                 W_list = [entry["W"] for entry in weights["layers"]]
                 b_list = [entry["b"] for entry in weights["layers"]]
 
-            # Support dict like {"W1":..., "b1":..., "W2":..., "b2":...}
             else:
-                W_list = []
-                b_list = []
+                tmp_W = []
+                tmp_b = []
                 i = 1
                 while f"W{i}" in weights and f"b{i}" in weights:
-                    W_list.append(weights[f"W{i}"])
-                    b_list.append(weights[f"b{i}"])
+                    tmp_W.append(weights[f"W{i}"])
+                    tmp_b.append(weights[f"b{i}"])
                     i += 1
+                if len(tmp_W) > 0:
+                    W_list = tmp_W
+                    b_list = tmp_b
 
-                if len(W_list) == 0:
-                    raise ValueError("Unsupported dict weight format")
+        elif isinstance(weights, (list, tuple)) and len(weights) > 0:
+            if isinstance(weights[0], dict):
+                W_list = [entry["W"] for entry in weights]
+                b_list = [entry["b"] for entry in weights]
 
-        # Case 3: list/tuple of dicts [{"W":...,"b":...}, ...]
-        elif isinstance(weights, (list, tuple)) and len(weights) > 0 and isinstance(weights[0], dict):
-            W_list = [entry["W"] for entry in weights]
-            b_list = [entry["b"] for entry in weights]
-
-        # Case 4: object array of dicts
         elif isinstance(weights, np.ndarray) and weights.dtype == object:
             weights_list = list(weights)
             if len(weights_list) > 0 and isinstance(weights_list[0], dict):
                 W_list = [entry["W"] for entry in weights_list]
                 b_list = [entry["b"] for entry in weights_list]
-            else:
-                raise ValueError("Unsupported ndarray weight format")
 
-        else:
+        if W_list is None or b_list is None:
             raise ValueError("Unsupported weight format passed to set_weights")
 
-        if len(W_list) != len(b_list):
-            raise ValueError("Number of weight matrices and bias vectors must match")
+        if len(W_list) != len(self.layers) or len(b_list) != len(self.layers):
+            raise ValueError("Number of weights/biases does not match model layers")
 
-        if len(W_list) != len(b_list):
-            raise ValueError("Number of weight matrices and bias vectors must match")
-
-        rebuilt_layers = []
-        for i, (W, b) in enumerate(zip(W_list, b_list)):
-            W_arr = np.array(W, dtype=np.float64)
-            b_arr = np.array(b, dtype=np.float64)
-
-            if W_arr.ndim != 2:
-                raise ValueError("Each weight tensor must be a 2D matrix")
-
-            out_features = W_arr.shape[1]
-            if b_arr.ndim == 1 and b_arr.shape[0] != out_features:
-                raise ValueError("Bias shape does not match weight output dimension")
-            if b_arr.ndim == 2 and b_arr.shape[1] != out_features:
-                raise ValueError("Bias shape does not match weight output dimension")
-
-            activation = self.activation if i < len(W_list) - 1 else None
-            layer = NeuralLayer(
-                W_arr.shape[0],
-                out_features,
-                activation=activation,
-                weight_init="zeros",
-            )
-
-            layer.W = W_arr.copy()
-            if b_arr.ndim == 1:
-                layer.b = b_arr.reshape(1, -1)
-            else:
-                layer.b = b_arr.copy()
-            rebuilt_layers.append(layer)
-
-        self.layers = rebuilt_layers
-        self.layer_sizes = [self.layers[0].W.shape[0]] + [layer.W.shape[1] for layer in self.layers]
-
+        for layer, W, b in zip(self.layers, W_list, b_list):
+            layer.W = np.array(W, dtype=np.float64).copy()
+            layer.b = np.array(b, dtype=np.float64).copy()
+            if layer.b.ndim == 1:
+                layer.b = layer.b.reshape(1, -1)
