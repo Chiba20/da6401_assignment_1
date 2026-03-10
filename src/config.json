@@ -4,7 +4,7 @@
   "batch_size": 64,
   "loss": "cross_entropy",
   "optimizer": "rmsprop",
-  "learning_rate": 0.001,
+  "learning_rate": 0.01,
   "weight_decay": 0.0,
   "num_layers": 3,
   "hidden_size": [
