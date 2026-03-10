@@ -1,0 +1,12 @@
+{"time":"2026-03-07T16:40:58.3520883+05:30","level":"INFO","msg":"stream: starting","core version":"0.25.0"}
+{"time":"2026-03-07T16:40:58.8505322+05:30","level":"INFO","msg":"stream: created new stream","id":"vmq36lbm"}
+{"time":"2026-03-07T16:40:58.8507211+05:30","level":"INFO","msg":"handler: started","stream_id":"vmq36lbm"}
+{"time":"2026-03-07T16:40:58.8541433+05:30","level":"INFO","msg":"stream: started","id":"vmq36lbm"}
+{"time":"2026-03-07T16:40:58.854279+05:30","level":"INFO","msg":"writer: started","stream_id":"vmq36lbm"}
+{"time":"2026-03-07T16:40:58.854279+05:30","level":"INFO","msg":"sender: started","stream_id":"vmq36lbm"}
+{"time":"2026-03-07T16:41:15.6942702+05:30","level":"INFO","msg":"fileTransfer: Close: file transfer manager closed"}
+{"time":"2026-03-07T16:41:16.1756913+05:30","level":"INFO","msg":"handler: operation stats","stats":{}}
+{"time":"2026-03-07T16:41:16.1832263+05:30","level":"INFO","msg":"stream: closing","id":"vmq36lbm"}
+{"time":"2026-03-07T16:41:16.1832263+05:30","level":"INFO","msg":"handler: closed","stream_id":"vmq36lbm"}
+{"time":"2026-03-07T16:41:16.2119062+05:30","level":"INFO","msg":"sender: closed","stream_id":"vmq36lbm"}
+{"time":"2026-03-07T16:41:16.2119062+05:30","level":"INFO","msg":"stream: closed","id":"vmq36lbm"}

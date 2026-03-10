@@ -1,0 +1,12 @@
+Logging sample_images_table to W&B with 50 images
+Epoch 1/10 | val_loss=0.503698 | val_acc=0.863333
+Epoch 2/10 | val_loss=0.371844 | val_acc=0.893500
+Epoch 3/10 | val_loss=0.330300 | val_acc=0.904667
+Epoch 4/10 | val_loss=0.304083 | val_acc=0.914167
+Epoch 5/10 | val_loss=0.286528 | val_acc=0.917833
+Epoch 6/10 | val_loss=0.267303 | val_acc=0.922333
+Epoch 7/10 | val_loss=0.252355 | val_acc=0.929000
+Epoch 8/10 | val_loss=0.240738 | val_acc=0.931333
+Epoch 9/10 | val_loss=0.228672 | val_acc=0.936500
+Epoch 10/10 | val_loss=0.219931 | val_acc=0.935833
+Final test accuracy: 0.943500

@@ -1,0 +1,11 @@
+Epoch 1/10 | val_loss=1.819794 | val_acc=0.357167 | first_layer_grad_norm=1.847079
+Epoch 2/10 | val_loss=1.579729 | val_acc=0.381000 | first_layer_grad_norm=0.180882
+Epoch 3/10 | val_loss=1.803049 | val_acc=0.278833 | first_layer_grad_norm=0.131527
+Epoch 4/10 | val_loss=1.443811 | val_acc=0.433000 | first_layer_grad_norm=0.100771
+Epoch 5/10 | val_loss=1.329746 | val_acc=0.456333 | first_layer_grad_norm=0.155970
+Epoch 6/10 | val_loss=1.342793 | val_acc=0.446667 | first_layer_grad_norm=0.127097
+Epoch 7/10 | val_loss=1.617425 | val_acc=0.416500 | first_layer_grad_norm=0.071168
+Epoch 8/10 | val_loss=1.528778 | val_acc=0.410167 | first_layer_grad_norm=0.114258
+Epoch 9/10 | val_loss=1.715575 | val_acc=0.405500 | first_layer_grad_norm=0.078727
+Epoch 10/10 | val_loss=1.728122 | val_acc=0.377333 | first_layer_grad_norm=0.079644
+Final test accuracy: 0.375200

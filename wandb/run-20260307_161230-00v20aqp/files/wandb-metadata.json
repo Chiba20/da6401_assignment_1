@@ -1,0 +1,49 @@
+{
+  "os":  "Windows-11-10.0.22631-SP0",
+  "python":  "CPython 3.13.12",
+  "startedAt":  "2026-03-07T10:42:30.672942Z",
+  "args":  [
+    "-d",
+    "mnist",
+    "-e",
+    "5",
+    "-b",
+    "64",
+    "-l",
+    "cross_entropy",
+    "-o",
+    "momentum",
+    "-lr",
+    "0.01",
+    "-wd",
+    "0.0",
+    "-nhl",
+    "2",
+    "-sz",
+    "128",
+    "128",
+    "-a",
+    "tanh",
+    "-w_i",
+    "xavier"
+  ],
+  "program":  "C:\\Users\\HP\\Downloads\\submission_structure_fixed\\src\\train_sweep.py",
+  "codePath":  "src\\train_sweep.py",
+  "codePathLocal":  "src\\train_sweep.py",
+  "email":  "ge26z812@smail.iitm.ac.in",
+  "root":  "C:\\Users\\HP\\Downloads\\submission_structure_fixed",
+  "host":  "DESKTOP-TEQEIB7",
+  "executable":  "C:\\Users\\HP\\AppData\\Local\\Microsoft\\WindowsApps\\PythonSoftwareFoundation.Python.3.13_qbz5n2kfra8p0\\python.exe",
+  "cpu_count":  4,
+  "cpu_count_logical":  8,
+  "disk":  {
+    "/":  {
+      "total":  "510924943360",
+      "used":  "250523815936"
+    }
+  },
+  "memory":  {
+    "total":  "16985714688"
+  },
+  "writerId":  "3fro0kn4kr976qtc7prwwkt9nebsx98g"
+}
