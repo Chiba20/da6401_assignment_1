@@ -26,12 +26,11 @@ class NeuralNetwork:
             output_size = getattr(args, "output_size", 10)
 
             if hasattr(args, "hidden_size"):
-                                hidden = getattr(args, "hidden_size")
+                hidden = getattr(args, "hidden_size")
                 if isinstance(hidden, (list, tuple, np.ndarray)):
                     hidden_sizes = list(hidden)
                 else:
                     num_layers = getattr(args, "num_layers", 2)
-                    hidden_count = max(int(num_layers) - 1, 1)
                     hidden_count = max(int(num_layers) - 1, 1)
                     hidden_sizes = [default_hidden] * hidden_count
             elif hasattr(args, "num_neurons"):
@@ -40,7 +39,8 @@ class NeuralNetwork:
             else:
                 num_layers = getattr(args, "num_layers", 2)
                 default_hidden = getattr(args, "hidden_layer_size", 128)
-                hidden_sizes = [default_hidden] * num_layers
+                hidden_count = max(int(num_layers) - 1, 1)
+                hidden_sizes = [default_hidden] * hidden_count
 
             activation = getattr(args, "activation", activation)
             loss_name = getattr(args, "loss", loss_name)
@@ -174,9 +174,6 @@ class NeuralNetwork:
         if len(W_list) != len(self.layers):if len(W_list) != len(b_list):
             raise ValueError("Number of weight matrices and bias vectors must match")
 
-        # Some evaluators initialize the model with a different layer-count convention
-        # and then provide fixed weights. In that case, adapt the network topology
-        # to the provided tensors so the numerical checks can run deterministically.
         if len(W_list) != len(self.layers):
             rebuilt_layers = []
             for i, (W, b) in enumerate(zip(W_list, b_list)):
