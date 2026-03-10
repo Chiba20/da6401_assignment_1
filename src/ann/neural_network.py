@@ -23,7 +23,8 @@ class NeuralNetwork:
         weight_decay=0.0,
         weight_init="xavier",
     ):
-        # Support autograder style: NeuralNetwork(args_namespace)
+
+        # Support autograder: NeuralNetwork(args_namespace)
         if isinstance(layer_sizes, Namespace):
             args = layer_sizes
 
@@ -36,6 +37,7 @@ class NeuralNetwork:
                     hidden_sizes = list(hidden)
                 else:
                     hidden_sizes = [int(hidden)]
+
             elif hasattr(args, "num_neurons"):
                 hidden = getattr(args, "num_neurons")
                 if isinstance(hidden, (list, tuple, np.ndarray)):
@@ -43,6 +45,7 @@ class NeuralNetwork:
                 else:
                     num_layers = getattr(args, "hidden_layers", getattr(args, "num_layers", 1))
                     hidden_sizes = [int(hidden)] * int(num_layers)
+
             else:
                 num_layers = int(getattr(args, "hidden_layers", getattr(args, "num_layers", 1)))
                 default_hidden = int(getattr(args, "hidden_layer_size", 128))
@@ -87,7 +90,7 @@ class NeuralNetwork:
                 )
             )
 
-        # Output layer is linear
+        # Output layer (linear)
         self.layers.append(
             NeuralLayer(
                 layer_sizes[-2],
@@ -100,10 +103,6 @@ class NeuralNetwork:
     def forward(self, x):
         x = np.asarray(x, dtype=np.float64)
 
-        # Scale normalized inputs to raw pixel values
-        if np.all(x >= 0) and np.all(x <= 1):
-            x = x * 255.0
-
         if x.ndim == 1:
             out = x.reshape(1, -1)
         elif x.ndim > 2:
@@ -112,31 +111,35 @@ class NeuralNetwork:
             out = x
 
         expected_input_size = self.layer_sizes[0]
+
         if out.shape[1] != expected_input_size:
             if out.shape[1] > expected_input_size:
                 out = out[:, :expected_input_size]
             else:
                 pad_width = expected_input_size - out.shape[1]
-                out = np.pad(out, ((0, 0), (0, pad_width)), mode='constant', constant_values=0)
+                out = np.pad(out, ((0, 0), (0, pad_width)), mode="constant")
 
         for layer in self.layers:
             out = layer.forward(out)
 
-        # return raw logits
-        return out
+        return out  # logits
 
     def compute_loss(self, y_true, logits):
         if self.loss_name == "cross_entropy":
             return cross_entropy_loss(y_true, logits)
+
         if self.loss_name == "mean_squared_error":
             return mse_loss(y_true, logits)
+
         raise ValueError(f"Unsupported loss: {self.loss_name}")
 
     def backward(self, y_true, logits):
         if self.loss_name == "cross_entropy":
             grad = cross_entropy_gradient(y_true, logits)
+
         elif self.loss_name == "mean_squared_error":
             grad = mse_gradient(y_true, logits)
+
         else:
             raise ValueError(f"Unsupported loss: {self.loss_name}")
 
@@ -145,6 +148,7 @@ class NeuralNetwork:
 
         grad_W_list = [layer.grad_W.copy() for layer in self.layers]
         grad_b_list = [layer.grad_b.copy() for layer in self.layers]
+
         return grad_W_list, grad_b_list
 
     def update_weights(self):
@@ -162,110 +166,34 @@ class NeuralNetwork:
         }
 
     def set_weights(self, weights):
-        """
-        Accept many formats and REBUILD model architecture from supplied weights.
-        """
+
         if isinstance(weights, np.ndarray) and weights.shape == ():
             weights = weights.item()
 
-        W_list = None
-        b_list = None
+        if isinstance(weights, dict) and "weights" in weights:
+            W_list = weights["weights"]
+            b_list = weights["biases"]
 
-        # Format 1: {"weights":[...], "biases":[...]}
-        if isinstance(weights, dict):
-            if "weights" in weights and "biases" in weights:
-                W_list = list(weights["weights"])
-                b_list = list(weights["biases"])
-
-            # Format 2: {"layers":[{"W":...,"b":...}, ...]}
-            elif "layers" in weights:
-                W_list = [entry["W"] for entry in weights["layers"]]
-                b_list = [entry["b"] for entry in weights["layers"]]
-
-            # Format 3: {"W1":..., "b1":..., "W2":..., "b2":...}
+        elif isinstance(weights, (list, tuple)):
+            if len(weights) == 2:
+                W_list, b_list = weights
             else:
-                temp_W = []
-                temp_b = []
-                i = 1
-                while f"W{i}" in weights and f"b{i}" in weights:
-                    temp_W.append(weights[f"W{i}"])
-                    temp_b.append(weights[f"b{i}"])
-                    i += 1
-                if len(temp_W) > 0:
-                    W_list = temp_W
-                    b_list = temp_b
+                W_list = weights[::2]
+                b_list = weights[1::2]
 
-        # Format 4: ndarray(object)
-        elif isinstance(weights, np.ndarray):
-            if weights.dtype == object:
-                weights = list(weights)
+        else:
+            raise ValueError("Unsupported weight format")
 
-        # Format 5: list/tuple
-        if isinstance(weights, (list, tuple)):
-            # (weights_list, biases_list)
-            if (
-                len(weights) == 2
-                and isinstance(weights[0], (list, tuple, np.ndarray))
-                and isinstance(weights[1], (list, tuple, np.ndarray))
-            ):
-                W_list = list(weights[0])
-                b_list = list(weights[1])
-
-            # [{"W":...,"b":...}, ...]
-            elif len(weights) > 0 and isinstance(weights[0], dict):
-                W_list = [entry["W"] for entry in weights]
-                b_list = [entry["b"] for entry in weights]
-
-            # [W1, b1, W2, b2, ...]
-            elif len(weights) % 2 == 0 and len(weights) > 0:
-                maybe_W = []
-                maybe_b = []
-                ok = True
-                for i in range(0, len(weights), 2):
-                    W = np.asarray(weights[i])
-                    b = np.asarray(weights[i + 1])
-                    if W.ndim != 2:
-                        ok = False
-                        break
-                    maybe_W.append(W)
-                    maybe_b.append(b)
-                if ok:
-                    W_list = maybe_W
-                    b_list = maybe_b
-
-        if W_list is None or b_list is None:
-            raise ValueError("Unsupported weight format passed to set_weights")
-
-        # Convert and normalize biases
         W_list = [np.asarray(W, dtype=np.float64) for W in W_list]
-        normalized_b = []
-        for b in b_list:
-            b = np.asarray(b, dtype=np.float64)
-            if b.ndim == 1:
-                b = b.reshape(1, -1)
-            normalized_b.append(b)
-        b_list = normalized_b
+        b_list = [np.asarray(b, dtype=np.float64).reshape(1, -1) for b in b_list]
 
-        # rebuild architecture from supplied weights
-        inferred_layer_sizes = [W_list[0].shape[0]]
+        inferred_sizes = [W_list[0].shape[0]]
         for W in W_list:
-            inferred_layer_sizes.append(W.shape[1])
+            inferred_sizes.append(W.shape[1])
 
-        self.layer_sizes = inferred_layer_sizes
+        self.layer_sizes = inferred_sizes
         self._build_layers(self.layer_sizes)
 
-        if len(W_list) != len(self.layers) or len(b_list) != len(self.layers):
-            raise ValueError("Number of weights/biases does not match model layers")
-
         for layer, W, b in zip(self.layers, W_list, b_list):
-            if W.shape != (layer.in_features, layer.out_features):
-                raise ValueError(
-                    f"Weight shape mismatch: expected {(layer.in_features, layer.out_features)}, got {W.shape}"
-                )
-            if b.shape != (1, layer.out_features):
-                raise ValueError(
-                    f"Bias shape mismatch: expected {(1, layer.out_features)}, got {b.shape}"
-                )
-
             layer.W = W.copy()
             layer.b = b.copy()
