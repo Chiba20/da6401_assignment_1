@@ -7,7 +7,7 @@
 https://github.com/Chiba20/da6401_assignment_1
 
 **Weights & Biases Report**  
-https://wandb.ai/https://wandb.ai/ge26z812-iitm-india/da6401-mlp/reports/DA6401-Assignment-1-MLP-for-Image-Classification--VmlldzoxNjEzNDI2MA
+[https://wandb.ai/https://wandb.ai/ge26z812-iitm-india/da6401-mlp/reports/DA6401-Assignment-1-MLP-for-Image-Classification--VmlldzoxNjEzNDI2MA](https://wandb.ai/ge26z812-iitm-india/da6401-mlp/reports/DA6401-Assignment-1-MLP-for-Image-Classification--VmlldzoxNjEzNDI2MA?accessToken=25y991ov1r5tevalopjjt0ka1jmnrn07x24ur9pv0bqer90qq6b0mk7dwygu1kqk)
 
 ---
 
