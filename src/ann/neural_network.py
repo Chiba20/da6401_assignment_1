@@ -171,7 +171,7 @@ class NeuralNetwork:
         if len(W_list) != len(b_list):
             raise ValueError("Number of weight matrices and bias vectors must match")
 
-        if len(W_list) != len(self.layers):if len(W_list) != len(b_list):
+        if len(W_list) != len(b_list):
             raise ValueError("Number of weight matrices and bias vectors must match")
 
         if len(W_list) != len(self.layers):
