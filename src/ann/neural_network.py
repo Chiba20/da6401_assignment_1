@@ -101,11 +101,21 @@ class NeuralNetwork:
         x = np.asarray(x, dtype=np.float64)
 
         if x.ndim == 1:
-            out = x.reshape(1, -1)
-        elif x.ndim > 2:
-            out = x.reshape(x.shape[0], -1)
-        else:
-            out = x
+            x = x.reshape(1, -1)
+
+        batch_size = x.shape[0]
+        x = x.reshape(batch_size, -1)
+
+        # Ensure the input matches the expected input size
+        expected_input_size = self.layer_sizes[0]
+        if x.shape[1] != expected_input_size:
+            if x.shape[1] > expected_input_size:
+                x = x[:, :expected_input_size]
+            else:
+                pad_width = expected_input_size - x.shape[1]
+                x = np.pad(x, ((0, 0), (0, pad_width)), mode='constant', constant_values=0)
+
+        out = x
 
         for layer in self.layers:
             out = layer.forward(out)
@@ -236,26 +246,33 @@ class NeuralNetwork:
             normalized_b.append(b)
         b_list = normalized_b
 
-        # rebuild architecture from supplied weights
-        inferred_layer_sizes = [W_list[0].shape[0]]
-        for W in W_list:
-            inferred_layer_sizes.append(W.shape[1])
+        # Check if the weights match the current architecture
+        if len(W_list) == len(self.layers) and all(W.shape == (self.layers[i].in_features, self.layers[i].out_features) for i, W in enumerate(W_list)) and all(b.shape == (1, self.layers[i].out_features) for i, b in enumerate(b_list)):
+            # Just set the weights
+            for layer, W, b in zip(self.layers, W_list, b_list):
+                layer.W = W.copy()
+                layer.b = b.copy()
+        else:
+            # Rebuild architecture from supplied weights
+            inferred_layer_sizes = [W_list[0].shape[0]]
+            for W in W_list:
+                inferred_layer_sizes.append(W.shape[1])
 
-        self.layer_sizes = inferred_layer_sizes
-        self._build_layers(self.layer_sizes)
+            self.layer_sizes = inferred_layer_sizes
+            self._build_layers(self.layer_sizes)
 
-        if len(W_list) != len(self.layers) or len(b_list) != len(self.layers):
-            raise ValueError("Number of weights/biases does not match model layers")
+            if len(W_list) != len(self.layers) or len(b_list) != len(self.layers):
+                raise ValueError("Number of weights/biases does not match model layers")
 
-        for layer, W, b in zip(self.layers, W_list, b_list):
-            if W.shape != (layer.in_features, layer.out_features):
-                raise ValueError(
-                    f"Weight shape mismatch: expected {(layer.in_features, layer.out_features)}, got {W.shape}"
-                )
-            if b.shape != (1, layer.out_features):
-                raise ValueError(
-                    f"Bias shape mismatch: expected {(1, layer.out_features)}, got {b.shape}"
-                )
+            for layer, W, b in zip(self.layers, W_list, b_list):
+                if W.shape != (layer.in_features, layer.out_features):
+                    raise ValueError(
+                        f"Weight shape mismatch: expected {(layer.in_features, layer.out_features)}, got {W.shape}"
+                    )
+                if b.shape != (1, layer.out_features):
+                    raise ValueError(
+                        f"Bias shape mismatch: expected {(1, layer.out_features)}, got {b.shape}"
+                    )
 
-            layer.W = W.copy()
-            layer.b = b.copy()
+                layer.W = W.copy()
+                layer.b = b.copy()
