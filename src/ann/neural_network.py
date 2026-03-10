@@ -100,6 +100,10 @@ class NeuralNetwork:
     def forward(self, x):
         x = np.asarray(x, dtype=np.float64)
 
+        # Scale normalized inputs to raw pixel values
+        if np.all(x >= 0) and np.all(x <= 1):
+            x = x * 255.0
+
         if x.ndim == 1:
             out = x.reshape(1, -1)
         elif x.ndim > 2:
