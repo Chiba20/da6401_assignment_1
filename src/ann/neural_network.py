@@ -101,21 +101,11 @@ class NeuralNetwork:
         x = np.asarray(x, dtype=np.float64)
 
         if x.ndim == 1:
-            x = x.reshape(1, -1)
-
-        batch_size = x.shape[0]
-        x = x.reshape(batch_size, -1)
-
-        # Ensure the input matches the expected input size
-        expected_input_size = self.layer_sizes[0]
-        if x.shape[1] != expected_input_size:
-            if x.shape[1] > expected_input_size:
-                x = x[:, :expected_input_size]
-            else:
-                pad_width = expected_input_size - x.shape[1]
-                x = np.pad(x, ((0, 0), (0, pad_width)), mode='constant', constant_values=0)
-
-        out = x
+            out = x.reshape(1, -1)
+        elif x.ndim > 2:
+            out = x.reshape(x.shape[0], -1)
+        else:
+            out = x
 
         for layer in self.layers:
             out = layer.forward(out)
@@ -127,16 +117,14 @@ class NeuralNetwork:
         if self.loss_name == "cross_entropy":
             return cross_entropy_loss(y_true, logits)
         if self.loss_name == "mean_squared_error":
-            probs = softmax(logits)
-            return mse_loss(y_true, probs)
+            return mse_loss(y_true, logits)
         raise ValueError(f"Unsupported loss: {self.loss_name}")
 
     def backward(self, y_true, logits):
         if self.loss_name == "cross_entropy":
             grad = cross_entropy_gradient(y_true, logits)
         elif self.loss_name == "mean_squared_error":
-            probs = softmax(logits)
-            grad = mse_gradient(y_true, probs)
+            grad = mse_gradient(y_true, logits)
         else:
             raise ValueError(f"Unsupported loss: {self.loss_name}")
 
