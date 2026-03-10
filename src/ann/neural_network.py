@@ -174,63 +174,35 @@ class NeuralNetwork:
         if len(W_list) != len(b_list):
             raise ValueError("Number of weight matrices and bias vectors must match")
 
-        if len(W_list) != len(self.layers):
-            rebuilt_layers = []
-            for i, (W, b) in enumerate(zip(W_list, b_list)):
-                W_arr = np.array(W, dtype=np.float64)
-                b_arr = np.array(b, dtype=np.float64)
-
-                if W_arr.ndim != 2:
-                    raise ValueError("Each weight tensor must be a 2D matrix")
-
-                out_features = W_arr.shape[1]
-                if b_arr.ndim == 1 and b_arr.shape[0] != out_features:
-                    raise ValueError("Bias shape does not match weight output dimension")
-                if b_arr.ndim == 2 and b_arr.shape[1] != out_features:
-                    raise ValueError("Bias shape does not match weight output dimension")
-
-                activation = self.activation if i < len(W_list) - 1 else None
-                layer = NeuralLayer(
-                    W_arr.shape[0],
-                    out_features,
-                    activation=activation,
-                    weight_init="zeros",
-                )
-
-                layer.W = W_arr.copy()
-                layer.b = b_arr.reshape(1, -1) if b_arr.ndim == 1 else b_arr.copy()
-                rebuilt_layers.append(layer)
-
-            self.layers = rebuilt_layers
-            self.layer_sizes = [self.layers[0].W.shape[0]] + [layer.W.shape[1] for layer in self.layers]
-
-        for layer, W, b in zip(self.layers, W_list, b_list):
+        rebuilt_layers = []
+        for i, (W, b) in enumerate(zip(W_list, b_list)):
             W_arr = np.array(W, dtype=np.float64)
             b_arr = np.array(b, dtype=np.float64)
 
             if W_arr.ndim != 2:
                 raise ValueError("Each weight tensor must be a 2D matrix")
 
-            # Accept both conventions: W[in_features, out_features] and W[out_features, in_features].
-            if W_arr.shape == layer.W.shape:
-                pass
-            elif W_arr.T.shape == layer.W.shape:
-                W_arr = W_arr.T
-            else:
-                raise ValueError("Weight shape does not match model layer dimensions")
+            out_features = W_arr.shape[1]
+            if b_arr.ndim == 1 and b_arr.shape[0] != out_features:
+                raise ValueError("Bias shape does not match weight output dimension")
+            if b_arr.ndim == 2 and b_arr.shape[1] != out_features:
+                raise ValueError("Bias shape does not match weight output dimension")
 
-            if b_arr.ndim == 1:
-                if b_arr.shape[0] != layer.b.shape[1]:
-                    raise ValueError("Bias shape does not match weight output dimension")
-                b_arr = b_arr.reshape(1, -1)
-            elif b_arr.ndim == 2:
-                if b_arr.shape == (layer.b.shape[1], 1):
-                    b_arr = b_arr.T
-                elif b_arr.shape != layer.b.shape:
-                    raise ValueError("Bias shape does not match weight output dimension")
-            else:
-                raise ValueError("Bias tensor must be 1D or 2D")
+            activation = self.activation if i < len(W_list) - 1 else None
+            layer = NeuralLayer(
+                W_arr.shape[0],
+                out_features,
+                activation=activation,
+                weight_init="zeros",
+            )
 
             layer.W = W_arr.copy()
-            layer.b = b_arr.copy()
+            if b_arr.ndim == 1:
+                layer.b = b_arr.reshape(1, -1)
+            else:
+                layer.b = b_arr.copy()
+            rebuilt_layers.append(layer)
+
+        self.layers = rebuilt_layers
+        self.layer_sizes = [self.layers[0].W.shape[0]] + [layer.W.shape[1] for layer in self.layers]
 

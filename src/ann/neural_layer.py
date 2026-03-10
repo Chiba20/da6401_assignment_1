@@ -11,7 +11,10 @@ class NeuralLayer:
         self.activation_derivative = get_activation_derivative(activation)
 
         if weight_init == "xavier":
-            scale = np.sqrt(1.0 / in_features)
+            if activation == "relu":
+                scale = np.sqrt(2.0 / in_features)
+            else:
+                scale = np.sqrt(1.0 / in_features)
             self.W = np.random.randn(in_features, out_features) * scale
         elif weight_init == "random":
             self.W = np.random.randn(in_features, out_features) * 0.01

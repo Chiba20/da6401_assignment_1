@@ -15,7 +15,7 @@ def parse_arguments():
     parser.add_argument("-e", "--epochs", type=int, required=True)
     parser.add_argument("-b", "--batch_size", type=int, required=True)
     parser.add_argument("-l", "--loss", choices=["mean_squared_error", "cross_entropy"], required=True)
-    parser.add_argument("-o", "--optimizer", choices=["sgd", "momentum", "nag", "rmsprop"], required=True)
+    parser.add_argument("-o", "--optimizer", choices=["sgd", "momentum", "nag", "rmsprop", "adam", "nadam"], required=True)
     parser.add_argument("-lr", "--learning_rate", type=float, required=True)
     parser.add_argument("-wd", "--weight_decay", type=float, default=0.0)
     parser.add_argument("-nhl", "--num_layers", type=int, required=True)
