@@ -160,7 +160,7 @@ class NeuralNetwork:
         else:
             raise ValueError("Unsupported weight format passed to set_weights")
 
-       if len(W_list) != len(b_list):
+        if len(W_list) != len(b_list):
             raise ValueError("Number of weight matrices and bias vectors must match")
 
         # Some evaluators initialize the model with a different layer-count convention
