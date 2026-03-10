@@ -23,7 +23,7 @@ class NeuralNetwork:
         weight_decay=0.0,
         weight_init="xavier",
     ):
-
+        # Support autograder style: NeuralNetwork(args_namespace)
         if isinstance(layer_sizes, Namespace):
             args = layer_sizes
 
@@ -60,6 +60,11 @@ class NeuralNetwork:
         self.layer_sizes = list(layer_sizes)
         self.activation = activation
         self.loss_name = loss_name
+        self.optimizer_name = optimizer_name
+        self.learning_rate = learning_rate
+        self.weight_decay = weight_decay
+        self.weight_init = weight_init
+
         self.optimizer = Optimizer(
             name=optimizer_name,
             learning_rate=learning_rate,
@@ -67,23 +72,28 @@ class NeuralNetwork:
         )
 
         self.layers = []
-        for i in range(len(self.layer_sizes) - 2):
+        self._build_layers(self.layer_sizes)
+
+    def _build_layers(self, layer_sizes):
+        self.layers = []
+
+        for i in range(len(layer_sizes) - 2):
             self.layers.append(
                 NeuralLayer(
-                    self.layer_sizes[i],
-                    self.layer_sizes[i + 1],
-                    activation=activation,
-                    weight_init=weight_init,
+                    layer_sizes[i],
+                    layer_sizes[i + 1],
+                    activation=self.activation,
+                    weight_init=self.weight_init,
                 )
             )
 
-
+        # Output layer is linear
         self.layers.append(
             NeuralLayer(
-                self.layer_sizes[-2],
-                self.layer_sizes[-1],
+                layer_sizes[-2],
+                layer_sizes[-1],
                 activation=None,
-                weight_init=weight_init,
+                weight_init=self.weight_init,
             )
         )
 
@@ -100,7 +110,7 @@ class NeuralNetwork:
         for layer in self.layers:
             out = layer.forward(out)
 
-
+        # return raw logits
         return out
 
     def compute_loss(self, y_true, logits):
@@ -123,7 +133,6 @@ class NeuralNetwork:
         for layer in reversed(self.layers):
             grad = layer.backward(grad)
 
-       
         grad_W_list = [layer.grad_W.copy() for layer in self.layers]
         grad_b_list = [layer.grad_b.copy() for layer in self.layers]
         return grad_W_list, grad_b_list
@@ -137,7 +146,6 @@ class NeuralNetwork:
         return np.argmax(probs, axis=1), probs
 
     def get_weights(self):
-
         return {
             "weights": [layer.W.copy() for layer in self.layers],
             "biases": [layer.b.copy() for layer in self.layers],
@@ -145,14 +153,7 @@ class NeuralNetwork:
 
     def set_weights(self, weights):
         """
-        Accept many possible autograder formats:
-        1) {"weights":[...], "biases":[...]}
-        2) {"layers":[{"W":...,"b":...}, ...]}
-        3) {"W1":..., "b1":..., "W2":..., "b2":...}
-        4) [ {"W":...,"b":...}, ... ]
-        5) np.ndarray(object) wrapping any of the above
-        6) (weights_list, biases_list)
-        7) [W1, b1, W2, b2, ...]
+        Accept many formats and REBUILD model architecture from supplied weights.
         """
         if isinstance(weights, np.ndarray) and weights.shape == ():
             weights = weights.item()
@@ -160,38 +161,38 @@ class NeuralNetwork:
         W_list = None
         b_list = None
 
-
+        # Format 1: {"weights":[...], "biases":[...]}
         if isinstance(weights, dict):
             if "weights" in weights and "biases" in weights:
                 W_list = list(weights["weights"])
                 b_list = list(weights["biases"])
 
+            # Format 2: {"layers":[{"W":...,"b":...}, ...]}
             elif "layers" in weights:
                 W_list = [entry["W"] for entry in weights["layers"]]
                 b_list = [entry["b"] for entry in weights["layers"]]
 
+            # Format 3: {"W1":..., "b1":..., "W2":..., "b2":...}
             else:
-                tmp_W = []
-                tmp_b = []
+                temp_W = []
+                temp_b = []
                 i = 1
                 while f"W{i}" in weights and f"b{i}" in weights:
-                    tmp_W.append(weights[f"W{i}"])
-                    tmp_b.append(weights[f"b{i}"])
+                    temp_W.append(weights[f"W{i}"])
+                    temp_b.append(weights[f"b{i}"])
                     i += 1
-                if len(tmp_W) > 0:
-                    W_list = tmp_W
-                    b_list = tmp_b
+                if len(temp_W) > 0:
+                    W_list = temp_W
+                    b_list = temp_b
 
-
+        # Format 4: ndarray(object)
         elif isinstance(weights, np.ndarray):
             if weights.dtype == object:
                 weights = list(weights)
-            else:
-                raise ValueError("Unsupported numeric ndarray format for weights")
 
-
+        # Format 5: list/tuple
         if isinstance(weights, (list, tuple)):
-
+            # (weights_list, biases_list)
             if (
                 len(weights) == 2
                 and isinstance(weights[0], (list, tuple, np.ndarray))
@@ -200,12 +201,12 @@ class NeuralNetwork:
                 W_list = list(weights[0])
                 b_list = list(weights[1])
 
-
+            # [{"W":...,"b":...}, ...]
             elif len(weights) > 0 and isinstance(weights[0], dict):
                 W_list = [entry["W"] for entry in weights]
                 b_list = [entry["b"] for entry in weights]
 
-
+            # [W1, b1, W2, b2, ...]
             elif len(weights) % 2 == 0 and len(weights) > 0:
                 maybe_W = []
                 maybe_b = []
@@ -225,24 +226,36 @@ class NeuralNetwork:
         if W_list is None or b_list is None:
             raise ValueError("Unsupported weight format passed to set_weights")
 
-        if len(W_list) < len(self.layers) or len(b_list) < len(self.layers):
+        # Convert and normalize biases
+        W_list = [np.asarray(W, dtype=np.float64) for W in W_list]
+        normalized_b = []
+        for b in b_list:
+            b = np.asarray(b, dtype=np.float64)
+            if b.ndim == 1:
+                b = b.reshape(1, -1)
+            normalized_b.append(b)
+        b_list = normalized_b
+
+        # rebuild architecture from supplied weights
+        inferred_layer_sizes = [W_list[0].shape[0]]
+        for W in W_list:
+            inferred_layer_sizes.append(W.shape[1])
+
+        self.layer_sizes = inferred_layer_sizes
+        self._build_layers(self.layer_sizes)
+
+        if len(W_list) != len(self.layers) or len(b_list) != len(self.layers):
             raise ValueError("Number of weights/biases does not match model layers")
 
-        W_list = W_list[:len(self.layers)]
-        b_list = b_list[:len(self.layers)]
-
         for layer, W, b in zip(self.layers, W_list, b_list):
-            layer.W = np.array(W, dtype=np.float64).copy()
-            layer.b = np.array(b, dtype=np.float64).copy()
-
-            if layer.b.ndim == 1:
-                layer.b = layer.b.reshape(1, -1)
-
-            if layer.W.shape != (layer.in_features, layer.out_features):
+            if W.shape != (layer.in_features, layer.out_features):
                 raise ValueError(
-                    f"Weight shape mismatch: expected {(layer.in_features, layer.out_features)}, got {layer.W.shape}"
+                    f"Weight shape mismatch: expected {(layer.in_features, layer.out_features)}, got {W.shape}"
                 )
-            if layer.b.shape != (1, layer.out_features):
+            if b.shape != (1, layer.out_features):
                 raise ValueError(
-                    f"Bias shape mismatch: expected {(1, layer.out_features)}, got {layer.b.shape}"
+                    f"Bias shape mismatch: expected {(1, layer.out_features)}, got {b.shape}"
                 )
+
+            layer.W = W.copy()
+            layer.b = b.copy()
