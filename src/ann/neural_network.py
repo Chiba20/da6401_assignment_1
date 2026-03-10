@@ -26,11 +26,19 @@ class NeuralNetwork:
             output_size = getattr(args, "output_size", 10)
 
             if hasattr(args, "hidden_size"):
-                hidden_sizes = list(getattr(args, "hidden_size"))
+                                hidden = getattr(args, "hidden_size")
+                if isinstance(hidden, (list, tuple, np.ndarray)):
+                    hidden_sizes = list(hidden)
+                else:
+                    num_layers = getattr(args, "num_layers", 2)
+                    hidden_count = max(int(num_layers) - 1, 1)
+                    hidden_count = max(int(num_layers) - 1, 1)
+                    hidden_sizes = [default_hidden] * hidden_count
             elif hasattr(args, "num_neurons"):
-                hidden_sizes = list(getattr(args, "num_neurons"))
+                hidden = getattr(args, "num_neurons")
+                hidden_sizes = list(hidden) if isinstance(hidden, (list, tuple, np.ndarray)) else [int(hidden)]
             else:
-                num_layers = getattr(args, "num_layers", 1)
+                num_layers = getattr(args, "num_layers", 2)
                 default_hidden = getattr(args, "hidden_layer_size", 128)
                 hidden_sizes = [default_hidden] * num_layers
 
@@ -163,6 +171,9 @@ class NeuralNetwork:
         if len(W_list) != len(b_list):
             raise ValueError("Number of weight matrices and bias vectors must match")
 
+        if len(W_list) != len(self.layers):if len(W_list) != len(b_list):
+            raise ValueError("Number of weight matrices and bias vectors must match")
+
         # Some evaluators initialize the model with a different layer-count convention
         # and then provide fixed weights. In that case, adapt the network topology
         # to the provided tensors so the numerical checks can run deterministically.
@@ -197,7 +208,32 @@ class NeuralNetwork:
             self.layer_sizes = [self.layers[0].W.shape[0]] + [layer.W.shape[1] for layer in self.layers]
 
         for layer, W, b in zip(self.layers, W_list, b_list):
-            layer.W = np.array(W, dtype=np.float64).copy()
-            layer.b = np.array(b, dtype=np.float64).copy()
-            if layer.b.ndim == 1:
-                layer.b = layer.b.reshape(1, -1)
+            W_arr = np.array(W, dtype=np.float64)
+            b_arr = np.array(b, dtype=np.float64)
+
+            if W_arr.ndim != 2:
+                raise ValueError("Each weight tensor must be a 2D matrix")
+
+            # Accept both conventions: W[in_features, out_features] and W[out_features, in_features].
+            if W_arr.shape == layer.W.shape:
+                pass
+            elif W_arr.T.shape == layer.W.shape:
+                W_arr = W_arr.T
+            else:
+                raise ValueError("Weight shape does not match model layer dimensions")
+
+            if b_arr.ndim == 1:
+                if b_arr.shape[0] != layer.b.shape[1]:
+                    raise ValueError("Bias shape does not match weight output dimension")
+                b_arr = b_arr.reshape(1, -1)
+            elif b_arr.ndim == 2:
+                if b_arr.shape == (layer.b.shape[1], 1):
+                    b_arr = b_arr.T
+                elif b_arr.shape != layer.b.shape:
+                    raise ValueError("Bias shape does not match weight output dimension")
+            else:
+                raise ValueError("Bias tensor must be 1D or 2D")
+
+            layer.W = W_arr.copy()
+            layer.b = b_arr.copy()
+
